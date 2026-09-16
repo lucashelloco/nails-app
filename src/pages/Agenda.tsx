@@ -261,7 +261,7 @@ export default function Agenda() {
     if (!editingEvent) return
     const selectedClient = clients?.find((client) => client.id === input.clientId)
     if (!selectedClient) {
-      setError('Un rendez-vous doit être lié à une cliente existante.')
+      setError('Un rendez-vous doit être lié à un(e) client(e) existant(e).')
       return
     }
     setSaving(true)
@@ -289,7 +289,7 @@ export default function Agenda() {
   async function handleCreateEvent(input: AppointmentInput) {
     const selectedClient = clients?.find((client) => client.id === input.clientId)
     if (!selectedClient) {
-      setError('Un rendez-vous doit être lié à une cliente existante.')
+      setError('Un rendez-vous doit être lié à un(e) client(e) existant(e).')
       return
     }
     setSaving(true)
@@ -568,7 +568,7 @@ export default function Agenda() {
       )}
 
       {clientFormOpen && (
-        <Modal title="Nouvelle cliente" onClose={() => setClientFormOpen(false)}>
+        <Modal title="Nouveau / nouvelle client(e)" onClose={() => setClientFormOpen(false)}>
           <ClientForm
             onSubmit={handleCreateClient}
             onCancel={() => setClientFormOpen(false)}

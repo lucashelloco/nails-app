@@ -25,3 +25,28 @@ select,
 textarea {
   font: inherit;
 }
+
+button:not(:disabled) {
+  transition: filter 150ms ease, transform 150ms ease;
+}
+
+button:not(:disabled):hover {
+  filter: brightness(0.94);
+}
+
+button:not(:disabled) svg {
+  transition: transform 150ms ease;
+}
+
+button:not(:disabled):hover svg {
+  transform: scale(1.1);
+}
+
+@media (max-width: 640px) {
+  .mobile-icon-button {
+    width: 2.75rem;
+    min-width: 2.75rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}

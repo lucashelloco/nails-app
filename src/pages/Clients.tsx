@@ -37,7 +37,7 @@ export default function Clients() {
   }
 
   async function handleDelete(id: string) {
-    if (confirm('Supprimer cette fiche cliente ?')) {
+    if (confirm('Supprimer cette fiche client(e) ?')) {
       await runSafely(async () => {
         await deleteClient(id)
         setOpenId(null)
@@ -51,7 +51,7 @@ export default function Clients() {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Rechercher une cliente…"
+          placeholder="Rechercher un(e) client(e)…"
           className="flex-1 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#b48f74]"
         />
         <button
@@ -64,7 +64,7 @@ export default function Clients() {
 
       {clients && clients.length === 0 && (
         <p className="text-center text-sm text-neutral-500 py-10">
-          Aucune cliente pour l'instant. Ajoute ta première fiche cliente.
+          Aucun(e) client(e) pour l'instant. Ajoute ta première fiche client(e).
         </p>
       )}
 
@@ -122,7 +122,7 @@ export default function Clients() {
 
       {editing && (
         <Modal
-          title={editing === 'new' ? 'Nouvelle cliente' : 'Modifier la fiche'}
+          title={editing === 'new' ? 'Nouveau / nouvelle client(e)' : 'Modifier la fiche'}
           onClose={() => setEditing(null)}
         >
           <ClientForm

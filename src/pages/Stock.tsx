@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { addProduct, adjustProductQuantity, db, deleteProduct, updateProduct } from '../db/db'
 import type { Product, ProductInput } from '../types'
@@ -48,9 +50,11 @@ export default function Stock() {
         />
         <button
           onClick={() => setEditing('new')}
-          className="shrink-0 rounded-lg bg-[#8a6448] px-4 py-2 text-sm font-medium text-white"
+          aria-label="Ajouter un produit"
+          className="mobile-icon-button shrink-0 rounded-lg bg-[#8a6448] px-4 py-2 text-sm font-medium text-white"
         >
-          + Ajouter
+          <FontAwesomeIcon icon={faPlus} className="sm:mr-2" />
+          <span className="hidden sm:inline">Ajouter</span>
         </button>
       </div>
 
@@ -111,7 +115,7 @@ export default function Stock() {
                 aria-label="Supprimer"
                 className="text-neutral-300 hover:text-[#8f6a52] px-1 shrink-0"
               >
-                🗑
+                <FontAwesomeIcon icon={faTrash} />
               </button>
             </li>
           )

@@ -1,11 +1,15 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useMemo, useState, type FormEvent } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheck, faPen, faPlus, faTrash, faXmark } from '@fortawesome/free-solid-svg-icons'
 import { addService, db, deleteService, updateService } from '../db/db'
 import type { Service, ServiceInput } from '../types'
 import Modal from '../components/Modal'
+import { getAppName, saveAppName } from '../lib/appSettings'
 
 export default function Settings() {
   const services = useLiveQuery(() => db.services.orderBy('name').toArray(), []) ?? []
+  const [appName, setAppName] = useState(getAppName)
   const [query, setQuery] = useState('')
   const [editing, setEditing] = useState<Service | 'new' | null>(null)
 
@@ -34,6 +38,35 @@ export default function Settings() {
 
   return (
     <div className="space-y-4">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault()
+          setAppName(saveAppName(appName))
+        }}
+        className="rounded-xl border border-[#ead8c7] bg-white p-4"
+      >
+        <label className="block text-sm font-semibold text-neutral-800" htmlFor="app-name">
+          Nom de l’institut
+        </label>
+        <div className="mt-2 flex gap-2">
+          <input
+            id="app-name"
+            value={appName}
+            onChange={(event) => setAppName(event.target.value)}
+            maxLength={40}
+            className="min-w-0 flex-1 rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b48f74]"
+          />
+          <button
+            type="submit"
+            aria-label="Enregistrer le nom de l’institut"
+            className="mobile-icon-button rounded-lg bg-[#8a6448] px-4 py-2 text-sm font-medium text-white"
+          >
+            <FontAwesomeIcon icon={faCheck} className="sm:mr-2" />
+            <span className="hidden sm:inline">Enregistrer</span>
+          </button>
+        </div>
+      </form>
+
       <div className="rounded-xl border border-[#ead8c7] bg-white p-4">
         <h2 className="text-base font-semibold text-neutral-800">Prestations</h2>
         <p className="mt-1 text-sm text-neutral-500">
@@ -50,9 +83,11 @@ export default function Settings() {
         />
         <button
           onClick={() => setEditing('new')}
-          className="shrink-0 rounded-lg bg-[#8a6448] px-4 py-2 text-sm font-medium text-white"
+          aria-label="Ajouter une prestation"
+          className="mobile-icon-button shrink-0 rounded-lg bg-[#8a6448] px-4 py-2 text-sm font-medium text-white"
         >
-          + Ajouter
+          <FontAwesomeIcon icon={faPlus} className="sm:mr-2" />
+          <span className="hidden sm:inline">Ajouter</span>
         </button>
       </div>
 
@@ -83,16 +118,20 @@ export default function Settings() {
                 <button
                   type="button"
                   onClick={() => setEditing(service)}
-                  className="rounded-lg border border-neutral-300 px-2 py-1 text-xs font-medium text-neutral-700"
+                  aria-label="Modifier la prestation"
+                  className="mobile-icon-button rounded-lg border border-neutral-300 px-2 py-1 text-xs font-medium text-neutral-700"
                 >
-                  Modifier
+                  <FontAwesomeIcon icon={faPen} className="sm:mr-1" />
+                  <span className="hidden sm:inline">Modifier</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleDelete(service.id)}
-                  className="rounded-lg border border-[#d7bda3] px-2 py-1 text-xs font-medium text-[#8f6a52]"
+                  aria-label="Supprimer la prestation"
+                  className="mobile-icon-button rounded-lg border border-[#d7bda3] px-2 py-1 text-xs font-medium text-[#8f6a52]"
                 >
-                  Supprimer
+                  <FontAwesomeIcon icon={faTrash} className="sm:mr-1" />
+                  <span className="hidden sm:inline">Supprimer</span>
                 </button>
               </div>
             </div>
@@ -206,15 +245,19 @@ function ServiceForm({ initial, onSubmit, onCancel }: ServiceFormProps) {
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 rounded-lg border border-neutral-300 py-2.5 font-medium text-neutral-600"
+          aria-label="Annuler"
+          className="mobile-icon-button flex-1 rounded-lg border border-neutral-300 py-2.5 font-medium text-neutral-600"
         >
-          Annuler
+          <FontAwesomeIcon icon={faXmark} className="sm:mr-2" />
+          <span className="hidden sm:inline">Annuler</span>
         </button>
         <button
           type="submit"
-          className="flex-1 rounded-lg bg-[#8a6448] py-2.5 font-medium text-white"
+          aria-label="Enregistrer"
+          className="mobile-icon-button flex-1 rounded-lg bg-[#8a6448] py-2.5 font-medium text-white"
         >
-          Enregistrer
+          <FontAwesomeIcon icon={faCheck} className="sm:mr-2" />
+          <span className="hidden sm:inline">Enregistrer</span>
         </button>
       </div>
     </form>

@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus } from '@fortawesome/free-solid-svg-icons'
 import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { addClient, db } from '../db/db'
@@ -24,7 +26,7 @@ export default function Dashboard() {
   async function handleSubmit(input: AppointmentInput) {
     const selectedClient = clients?.find((client) => client.id === input.clientId)
     if (!selectedClient) {
-      setError('Un rendez-vous doit être lié à une cliente existante.')
+      setError('Un rendez-vous doit être lié à un(e) client(e) existant(e).')
       return
     }
     setSaving(true)
@@ -65,9 +67,11 @@ export default function Dashboard() {
         <button
           type="button"
           onClick={openForm}
+          aria-label="Créer un rendez-vous"
           className="w-full rounded-lg bg-[#8a6448] px-4 py-2 text-sm font-medium text-white"
         >
-          + Créer un RDV
+          <FontAwesomeIcon icon={faPlus} className="sm:mr-2" />
+          <span className="hidden sm:inline">Créer un RDV</span>
         </button>
       </div>
 
@@ -90,7 +94,7 @@ export default function Dashboard() {
           <span className="text-2xl font-semibold text-[#8a6448]">
             {clients?.length ?? '…'}
           </span>
-          <span className="text-sm text-neutral-500">clientes enregistrées</span>
+          <span className="text-sm text-neutral-500">client(e)s enregistré(e)s</span>
         </Link>
       </div>
 
@@ -130,7 +134,7 @@ export default function Dashboard() {
       )}
 
       {clientFormOpen && (
-        <Modal title="Nouvelle cliente" onClose={() => setClientFormOpen(false)}>
+        <Modal title="Nouveau / nouvelle client(e)" onClose={() => setClientFormOpen(false)}>
           <ClientForm
             onSubmit={handleCreateClient}
             onCancel={() => setClientFormOpen(false)}

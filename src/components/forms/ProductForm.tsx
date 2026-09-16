@@ -1,4 +1,6 @@
 import { useState, type FormEvent } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheck, faXmark } from '@fortawesome/free-solid-svg-icons'
 import type { Product, ProductCategory, ProductInput } from '../../types'
 
 const categories: { value: ProductCategory; label: string }[] = [
@@ -127,15 +129,19 @@ export default function ProductForm({ initial, onSubmit, onCancel }: ProductForm
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 rounded-lg border border-neutral-300 py-2.5 font-medium text-neutral-600"
+          aria-label="Annuler"
+          className="mobile-icon-button flex-1 rounded-lg border border-neutral-300 py-2.5 font-medium text-neutral-600"
         >
-          Annuler
+          <FontAwesomeIcon icon={faXmark} className="sm:mr-2" />
+          <span className="hidden sm:inline">Annuler</span>
         </button>
         <button
           type="submit"
-          className="flex-1 rounded-lg bg-[#8a6448] py-2.5 font-medium text-white"
+          aria-label="Enregistrer"
+          className="mobile-icon-button flex-1 rounded-lg bg-[#8a6448] py-2.5 font-medium text-white"
         >
-          Enregistrer
+          <FontAwesomeIcon icon={faCheck} className="sm:mr-2" />
+          <span className="hidden sm:inline">Enregistrer</span>
         </button>
       </div>
     </form>
