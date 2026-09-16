@@ -5,9 +5,11 @@ import Dashboard from './pages/Dashboard'
 import Stock from './pages/Stock'
 import Clients from './pages/Clients'
 import Agenda from './pages/Agenda'
+import Settings from './pages/Settings'
 import Login from './pages/Login'
 import { useSession } from './lib/useSession'
 import { startSync } from './db/sync'
+import { seedDefaultServices } from './db/db'
 
 export default function App() {
   const { session, loading } = useSession()
@@ -15,7 +17,9 @@ export default function App() {
 
   // Synchronisation avec Supabase tant qu'un compte est connecté
   useEffect(() => {
-    if (userId) return startSync(userId)
+    if (!userId) return
+    void seedDefaultServices()
+    return startSync(userId)
   }, [userId])
 
   if (loading) {
@@ -36,6 +40,7 @@ export default function App() {
           <Route path="stock" element={<Stock />} />
           <Route path="clientes" element={<Clients />} />
           <Route path="agenda" element={<Agenda />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
     </BrowserRouter>

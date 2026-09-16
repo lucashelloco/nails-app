@@ -182,11 +182,17 @@ export interface NewAppointment {
   notes?: string
 }
 
+export function cleanAppointmentNotes(description?: string) {
+  return (description ?? '')
+    .split('\n')
+    .filter((line) => !/^Tél\s*:/i.test(line.trim()))
+    .join('\n')
+    .trim()
+}
+
 export async function createAppointment(a: NewAppointment) {
   const end = new Date(a.start.getTime() + a.durationMin * 60_000)
-  const description = [a.clientPhone && `Tél : ${a.clientPhone}`, a.notes]
-    .filter(Boolean)
-    .join('\n')
+  const description = a.notes?.trim() ?? ''
   return (await apiFetch(API, {
     method: 'POST',
     body: JSON.stringify({
@@ -202,9 +208,7 @@ export async function createAppointment(a: NewAppointment) {
 
 export async function updateAppointment(id: string, a: NewAppointment) {
   const end = new Date(a.start.getTime() + a.durationMin * 60_000)
-  const description = [a.clientPhone && `Tél : ${a.clientPhone}`, a.notes]
-    .filter(Boolean)
-    .join('\n')
+  const description = a.notes?.trim() ?? ''
   return (await apiFetch(`${API}/${id}`, {
     method: 'PUT',
     body: JSON.stringify({

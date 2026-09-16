@@ -1,12 +1,21 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+  faCalendarAlt,
+  faCog,
+  faHome,
+  faPills,
+  faUsers,
+} from '@fortawesome/free-solid-svg-icons'
 import { useOnline } from '../lib/useOnline'
 import { signOut } from '../lib/auth'
 
 const tabs = [
-  { to: '/', label: 'Accueil', icon: '🏠', end: true },
-  { to: '/agenda', label: 'Agenda', icon: '📅', end: false },
-  { to: '/stock', label: 'Stock', icon: '🧴', end: false },
-  { to: '/clientes', label: 'Clientes', icon: '👥', end: false },
+  { to: '/', label: 'Accueil', icon: faHome, end: true },
+  { to: '/agenda', label: 'Agenda', icon: faCalendarAlt, end: false },
+  { to: '/stock', label: 'Stock', icon: faPills, end: false },
+  { to: '/clientes', label: 'Clientes', icon: faUsers, end: false },
+  { to: '/settings', label: 'Paramètres', icon: faCog, end: false },
 ]
 
 export default function Layout() {
@@ -38,7 +47,7 @@ export default function Layout() {
       </main>
 
       <nav className="fixed bottom-0 inset-x-0 border-t border-[#d7bda3] bg-white">
-        <div className="mx-auto max-w-2xl grid grid-cols-4">
+        <div className="mx-auto max-w-2xl grid grid-cols-5">
           {tabs.map((tab) => (
             <NavLink
               key={tab.to}
@@ -50,9 +59,7 @@ export default function Layout() {
                 }`
               }
             >
-              <span className="text-xl leading-none" aria-hidden>
-                {tab.icon}
-              </span>
+              <FontAwesomeIcon icon={tab.icon} className="text-lg leading-none" />
               {tab.label}
             </NavLink>
           ))}
