@@ -67,12 +67,12 @@ export default function Layout() {
               end={tab.end}
               aria-label={tab.label}
               className={({ isActive }) =>
-                `group flex flex-col items-center gap-0.5 px-0 py-3 sm:py-2.5 text-xs font-medium transition-colors hover:bg-[#f5eee7] hover:text-[#8a6448] ${
+                `group flex flex-col items-center gap-0.5 px-0 py-7 sm:py-2.5 text-xs font-medium transition-colors hover:bg-[#f5eee7] hover:text-[#8a6448] ${
                   isActive ? 'text-[#8a6448]' : 'text-neutral-400'
                 }`
               }
             >
-              <FontAwesomeIcon icon={tab.icon} className="text-lg leading-none transition-transform duration-150 group-hover:scale-110" />
+              <FontAwesomeIcon icon={tab.icon} className="text-xl leading-none transition-transform duration-150 group-hover:scale-110 sm:text-lg" />
               <span className="hidden sm:inline">{tab.label}</span>
             </NavLink>
           ))}
