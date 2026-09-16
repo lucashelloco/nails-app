@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
 import { defaultServices } from '../../db/db'
 import type { Client } from '../../types'
 
@@ -149,7 +149,7 @@ export default function AppointmentForm({
         <div className="flex gap-2">
           {clients.length === 0 ? (
             <div className="flex-1 rounded-lg border border-dashed border-[#d7bda3] bg-[#f5eee7] px-3 py-2 text-sm text-neutral-500">
-              Aucune cliente disponible — crée d’abord une fiche cliente.
+              Aucun(e) client(e) disponible — crée d’abord une fiche client(e).
             </div>
           ) : (
             <div className="flex-1 space-y-2">
@@ -158,7 +158,7 @@ export default function AppointmentForm({
                   type="text"
                   value={clientQuery}
                   onChange={(e) => setClientQuery(e.target.value)}
-                  placeholder="Rechercher une cliente…"
+                  placeholder="Rechercher un(e) client(e)…"
                   className={`${inputClass} bg-white`}
                 />
               )}
@@ -176,7 +176,7 @@ export default function AppointmentForm({
                     </option>
                   ))
                 ) : (
-                  <option value="">Aucune cliente trouvée</option>
+                  <option value="">Aucun(e) client(e) trouvé(e)</option>
                 )}
               </select>
             </div>
@@ -185,7 +185,7 @@ export default function AppointmentForm({
             <button
               type="button"
               onClick={onCreateClient}
-              aria-label="Créer une cliente"
+              aria-label="Créer un(e) client(e)"
               className="shrink-0 h-[42px] w-[42px] rounded-lg border border-neutral-300 bg-white text-neutral-700 transition hover:bg-[#f5eee7]"
             >
               <FontAwesomeIcon icon={faPlus} className="text-sm" />
@@ -234,15 +234,19 @@ export default function AppointmentForm({
 
       <div className="flex gap-2 pt-2">
         <button type="button" onClick={onCancel}
-          className="flex-1 rounded-lg border border-neutral-300 py-2.5 font-medium text-neutral-600">
-          Annuler
+          aria-label="Annuler"
+          className="mobile-icon-button flex-1 rounded-lg border border-neutral-300 py-2.5 font-medium text-neutral-600">
+          <FontAwesomeIcon icon={faXmark} className="sm:mr-2" />
+          <span className="hidden sm:inline">Annuler</span>
         </button>
         <button
           type="submit"
           disabled={saving || clients.length === 0 || !clientId}
-          className="flex-1 rounded-lg bg-[#8a6448] py-2.5 font-medium text-white disabled:opacity-50"
+          aria-label={saving ? 'Enregistrement' : submitLabel}
+          className="mobile-icon-button flex-1 rounded-lg bg-[#8a6448] py-2.5 font-medium text-white disabled:opacity-50"
         >
-          {saving ? 'Enregistrement…' : submitLabel}
+          <FontAwesomeIcon icon={faCheck} className="sm:mr-2" />
+          <span className="hidden sm:inline">{saving ? 'Enregistrement…' : submitLabel}</span>
         </button>
       </div>
     </form>
