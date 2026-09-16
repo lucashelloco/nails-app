@@ -1,4 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { useOnline } from '../lib/useOnline'
+import { signOut } from '../lib/auth'
 
 const tabs = [
   { to: '/', label: 'Accueil', icon: '🏠', end: true },
@@ -8,11 +10,26 @@ const tabs = [
 ]
 
 export default function Layout() {
+  const online = useOnline()
+
   return (
     <div className="min-h-dvh flex flex-col bg-rose-50 text-neutral-800">
       <header className="sticky top-0 z-10 bg-rose-600 text-white shadow-sm">
-        <div className="mx-auto max-w-2xl px-4 py-3">
-          <h1 className="text-lg font-semibold">💅 Mon Institut</h1>
+        <div className="mx-auto max-w-2xl px-4 py-3 flex items-center gap-3">
+          <h1 className="text-lg font-semibold flex-1">💅 Mon Institut</h1>
+          {!online && (
+            <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs font-medium">
+              Hors ligne · lecture seule
+            </span>
+          )}
+          <button
+            onClick={() => {
+              if (confirm('Se déconnecter de cet appareil ?')) signOut()
+            }}
+            className="text-xs text-rose-100 hover:text-white"
+          >
+            Déconnexion
+          </button>
         </div>
       </header>
 

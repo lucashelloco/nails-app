@@ -1,10 +1,19 @@
 import Dexie, { type EntityTable } from 'dexie'
-import type { Client, Product } from '../types'
+import type { Client, ClientInput, Product, ProductInput } from '../types'
+import { supabase } from '../lib/supabase'
+import {
+  clientToRow,
+  productToRow,
+  rowToClient,
+  rowToProduct,
+  type ClientRow,
+  type ProductRow,
+} from './mappers'
 
-// Base locale (IndexedDB). L'appli est "offline-first" : toutes les
-// données vivent sur l'appareil, ce qui permet à la PWA de fonctionner
-// sans connexion (pratique en institut). Un service de synchronisation
-// pourra être branché plus tard sans changer l'UI (voir README).
+// Supabase est la source de vérité (données partagées entre Mac, iPhone,
+// iPad…). Dexie (IndexedDB) sert de copie locale : les écrans lisent
+// dans Dexie, ce qui permet de consulter les données hors ligne.
+// Les écritures passent par Supabase puis mettent à jour la copie locale.
 class NailAppDB extends Dexie {
   products!: EntityTable<Product, 'id'>
   clients!: EntityTable<Client, 'id'>
@@ -20,59 +29,97 @@ class NailAppDB extends Dexie {
 
 export const db = new NailAppDB()
 
-function nowISO() {
-  return new Date().toISOString()
+export class OfflineError extends Error {
+  constructor() {
+    super('Pas de connexion internet : les modifications sont impossibles hors ligne.')
+  }
 }
 
-function newId() {
-  return crypto.randomUUID()
+function ensureOnline() {
+  if (!navigator.onLine) throw new OfflineError()
 }
 
 // --- Produits (stock) ---------------------------------------------------
 
-export async function addProduct(input: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) {
-  const product: Product = {
-    ...input,
-    id: newId(),
-    createdAt: nowISO(),
-    updatedAt: nowISO(),
-  }
-  await db.products.add(product)
+export async function addProduct(input: ProductInput) {
+  ensureOnline()
+  const { data, error } = await supabase
+    .from('products')
+    .insert(productToRow(input))
+    .select()
+    .single<ProductRow>()
+  if (error) throw error
+  const product = rowToProduct(data)
+  await db.products.put(product)
   return product
 }
 
-export async function updateProduct(id: string, changes: Partial<Product>) {
-  await db.products.update(id, { ...changes, updatedAt: nowISO() })
+export async function updateProduct(id: string, changes: Partial<ProductInput>) {
+  ensureOnline()
+  const { data, error } = await supabase
+    .from('products')
+    .update(productToRow(changes))
+    .eq('id', id)
+    .select()
+    .single<ProductRow>()
+  if (error) throw error
+  await db.products.put(rowToProduct(data))
 }
 
 export async function adjustProductQuantity(id: string, delta: number) {
-  const product = await db.products.get(id)
-  if (!product) return
-  const quantity = Math.max(0, product.quantity + delta)
-  await db.products.update(id, { quantity, updatedAt: nowISO() })
+  ensureOnline()
+  const { data, error } = await supabase
+    .rpc('adjust_product_quantity', { p_id: id, p_delta: delta })
+    .single<ProductRow>()
+  if (error) throw error
+  await db.products.put(rowToProduct(data))
 }
 
 export async function deleteProduct(id: string) {
+  ensureOnline()
+  const { error } = await supabase.from('products').delete().eq('id', id)
+  if (error) throw error
   await db.products.delete(id)
 }
 
 // --- Clientes -------------------------------------------------------------
 
-export async function addClient(input: Omit<Client, 'id' | 'createdAt' | 'updatedAt'>) {
-  const client: Client = {
-    ...input,
-    id: newId(),
-    createdAt: nowISO(),
-    updatedAt: nowISO(),
-  }
-  await db.clients.add(client)
+export async function addClient(input: ClientInput) {
+  ensureOnline()
+  const { data, error } = await supabase
+    .from('clients')
+    .insert(clientToRow(input))
+    .select()
+    .single<ClientRow>()
+  if (error) throw error
+  const client = rowToClient(data)
+  await db.clients.put(client)
   return client
 }
 
-export async function updateClient(id: string, changes: Partial<Client>) {
-  await db.clients.update(id, { ...changes, updatedAt: nowISO() })
+export async function updateClient(id: string, changes: Partial<ClientInput>) {
+  ensureOnline()
+  const { data, error } = await supabase
+    .from('clients')
+    .update(clientToRow(changes))
+    .eq('id', id)
+    .select()
+    .single<ClientRow>()
+  if (error) throw error
+  await db.clients.put(rowToClient(data))
 }
 
 export async function deleteClient(id: string) {
+  ensureOnline()
+  const { error } = await supabase.from('clients').delete().eq('id', id)
+  if (error) throw error
   await db.clients.delete(id)
+}
+
+/** Vide la copie locale (à la déconnexion). */
+export async function clearLocalData() {
+  await db.transaction('rw', db.products, db.clients, async () => {
+    await db.products.clear()
+    await db.clients.clear()
+  })
 }

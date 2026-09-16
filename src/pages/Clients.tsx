@@ -4,6 +4,7 @@ import { addClient, db, deleteClient, updateClient } from '../db/db'
 import type { Client, ClientInput } from '../types'
 import Modal from '../components/Modal'
 import ClientForm from '../components/forms/ClientForm'
+import { runSafely } from '../lib/runSafely'
 import ClientAppointments from '../components/ClientAppointments'
 
 export default function Clients() {
@@ -25,18 +26,22 @@ export default function Clients() {
   }, [clients, query])
 
   async function handleSubmit(input: ClientInput) {
-    if (editing && editing !== 'new') {
-      await updateClient(editing.id, input)
-    } else {
-      await addClient(input)
-    }
-    setEditing(null)
+    await runSafely(async () => {
+      if (editing && editing !== 'new') {
+        await updateClient(editing.id, input)
+      } else {
+        await addClient(input)
+      }
+      setEditing(null)
+    })
   }
 
   async function handleDelete(id: string) {
     if (confirm('Supprimer cette fiche cliente ?')) {
-      await deleteClient(id)
-      setOpenId(null)
+      await runSafely(async () => {
+        await deleteClient(id)
+        setOpenId(null)
+      })
     }
   }
 

@@ -4,6 +4,7 @@ import { addProduct, adjustProductQuantity, db, deleteProduct, updateProduct } f
 import type { Product, ProductInput } from '../types'
 import Modal from '../components/Modal'
 import ProductForm from '../components/forms/ProductForm'
+import { runSafely } from '../lib/runSafely'
 
 export default function Stock() {
   const products = useLiveQuery(() => db.products.orderBy('name').toArray(), [])
@@ -20,17 +21,19 @@ export default function Stock() {
   }, [products, query])
 
   async function handleSubmit(input: ProductInput) {
-    if (editing && editing !== 'new') {
-      await updateProduct(editing.id, input)
-    } else {
-      await addProduct(input)
-    }
-    setEditing(null)
+    await runSafely(async () => {
+      if (editing && editing !== 'new') {
+        await updateProduct(editing.id, input)
+      } else {
+        await addProduct(input)
+      }
+      setEditing(null)
+    })
   }
 
   async function handleDelete(id: string) {
     if (confirm('Supprimer ce produit du stock ?')) {
-      await deleteProduct(id)
+      await runSafely(() => deleteProduct(id))
     }
   }
 
@@ -85,7 +88,7 @@ export default function Stock() {
 
               <div className="flex items-center gap-1.5 shrink-0">
                 <button
-                  onClick={() => adjustProductQuantity(product.id, -1)}
+                  onClick={() => runSafely(() => adjustProductQuantity(product.id, -1))}
                   aria-label="Retirer une unité"
                   className="w-8 h-8 rounded-full border border-neutral-300 text-neutral-600 flex items-center justify-center"
                 >
@@ -95,7 +98,7 @@ export default function Stock() {
                   {product.quantity}
                 </span>
                 <button
-                  onClick={() => adjustProductQuantity(product.id, 1)}
+                  onClick={() => runSafely(() => adjustProductQuantity(product.id, 1))}
                   aria-label="Ajouter une unité"
                   className="w-8 h-8 rounded-full border border-neutral-300 text-neutral-600 flex items-center justify-center"
                 >

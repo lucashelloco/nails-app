@@ -108,8 +108,3 @@ sont envoyées automatiquement vers Supabase.
 - **Historique de consommation produit** : si utile, on peut ajouter un
   journal des mouvements de stock (quel produit, quelle quantité,
   quand) plutôt qu'un simple compteur.
-# nails-app
-# nails-app
-# nails-app
-# nails-app
-# nails-app
