@@ -51,7 +51,7 @@ export default function ProductForm({ initial, onSubmit, onCancel }: ProductForm
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Ex : Gel UV rose poudré"
-          className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-400"
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b48f74]"
         />
       </div>
 
@@ -61,7 +61,7 @@ export default function ProductForm({ initial, onSubmit, onCancel }: ProductForm
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as ProductCategory)}
-            className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-400"
+            className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b48f74]"
           >
             {categories.map((c) => (
               <option key={c.value} value={c.value}>
@@ -76,7 +76,7 @@ export default function ProductForm({ initial, onSubmit, onCancel }: ProductForm
             value={brand}
             onChange={(e) => setBrand(e.target.value)}
             placeholder="Optionnel"
-            className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-400"
+            className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b48f74]"
           />
         </div>
       </div>
@@ -89,7 +89,7 @@ export default function ProductForm({ initial, onSubmit, onCancel }: ProductForm
             min={0}
             value={quantity}
             onChange={(e) => setQuantity(Number(e.target.value))}
-            className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-400"
+            className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b48f74]"
           />
         </div>
         <div>
@@ -97,7 +97,7 @@ export default function ProductForm({ initial, onSubmit, onCancel }: ProductForm
           <input
             value={unit}
             onChange={(e) => setUnit(e.target.value)}
-            className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-400"
+            className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b48f74]"
           />
         </div>
         <div>
@@ -107,7 +107,7 @@ export default function ProductForm({ initial, onSubmit, onCancel }: ProductForm
             min={0}
             value={lowStockThreshold}
             onChange={(e) => setLowStockThreshold(Number(e.target.value))}
-            className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-400"
+            className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b48f74]"
           />
         </div>
       </div>
@@ -119,7 +119,7 @@ export default function ProductForm({ initial, onSubmit, onCancel }: ProductForm
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
           placeholder="Référence fournisseur, teinte, etc."
-          className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-400"
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b48f74]"
         />
       </div>
 
@@ -133,7 +133,7 @@ export default function ProductForm({ initial, onSubmit, onCancel }: ProductForm
         </button>
         <button
           type="submit"
-          className="flex-1 rounded-lg bg-rose-600 py-2.5 font-medium text-white"
+          className="flex-1 rounded-lg bg-[#8a6448] py-2.5 font-medium text-white"
         >
           Enregistrer
         </button>

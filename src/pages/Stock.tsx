@@ -44,11 +44,11 @@ export default function Stock() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Rechercher un produit…"
-          className="flex-1 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
+          className="flex-1 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#b48f74]"
         />
         <button
           onClick={() => setEditing('new')}
-          className="shrink-0 rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white"
+          className="shrink-0 rounded-lg bg-[#8a6448] px-4 py-2 text-sm font-medium text-white"
         >
           + Ajouter
         </button>
@@ -66,7 +66,7 @@ export default function Stock() {
           return (
             <li
               key={product.id}
-              className="bg-white rounded-xl border border-rose-100 p-3 flex items-center gap-3"
+              className="bg-white rounded-xl border border-[#ead8c7] p-3 flex items-center gap-3"
             >
               <button
                 onClick={() => setEditing(product)}
@@ -109,7 +109,7 @@ export default function Stock() {
               <button
                 onClick={() => handleDelete(product.id)}
                 aria-label="Supprimer"
-                className="text-neutral-300 hover:text-red-500 px-1 shrink-0"
+                className="text-neutral-300 hover:text-[#8f6a52] px-1 shrink-0"
               >
                 🗑
               </button>

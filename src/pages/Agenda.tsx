@@ -1,12 +1,22 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPen, faTrash } from '@fortawesome/free-solid-svg-icons'
 import {
+  createAppointment,
+  deleteAppointment,
   ensureToken,
   getEventsBetween,
   GoogleAuthError,
   type CalendarEvent,
+  updateAppointment,
 } from '../lib/googleCalendar'
 import { useGoogleConnection } from '../lib/useGoogleConnection'
 import Modal from '../components/Modal'
+import AppointmentForm, { services as serviceOptions, type AppointmentInput } from '../components/forms/AppointmentForm'
+import ClientForm from '../components/forms/ClientForm'
+import { addClient, db } from '../db/db'
+import type { Client, ClientInput } from '../types'
 
 const HOUR_HEIGHT = 48 // px par heure
 const DEFAULT_START_HOUR = 8
@@ -61,6 +71,21 @@ function fmtTime(d: Date) {
   return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
 }
 
+function cleanEventSummary(summary?: string) {
+  return (summary ?? '')
+    .replace(/\b(?:\+33|0|00)[0-9\s.-]{8,}\b/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/\s*[-–—]\s*$/g, '')
+    .trim()
+}
+
+function getServiceColor(summary?: string) {
+  const raw = cleanEventSummary(summary)
+  const serviceName = raw.split(' — ')[0]?.trim().toLowerCase()
+  const matched = serviceOptions.find((service) => service.label.toLowerCase() === serviceName)
+  return matched?.color ?? '#F9DCE8'
+}
+
 // --- Placement des RDV -------------------------------------------------------
 
 interface PlacedEvent {
@@ -110,7 +135,12 @@ export default function Agenda() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selected, setSelected] = useState<CalendarEvent | null>(null)
+  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
+  const [creating, setCreating] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [now, setNow] = useState(() => new Date())
+  const [clientFormOpen, setClientFormOpen] = useState(false)
+  const clients = useLiveQuery(() => db.clients.orderBy('lastName').toArray(), [])
 
   const weekDays = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart])
   const days = view === 'week' ? weekDays : [anchor]
@@ -178,14 +208,108 @@ export default function Agenda() {
     ? anchor.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
     : `${days[0].toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} – ${days[6].toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}`
 
+  function getEventClientName(event: CalendarEvent) {
+    const summary = cleanEventSummary(event.summary)
+    return summary.includes(' — ') ? summary.split(' — ').slice(1).join(' — ').trim() : 'Client'
+  }
+
+  function getEventInitial(event: CalendarEvent, clientList: Client[] = []): Partial<AppointmentInput> | undefined {
+    const start = event.start.dateTime ? new Date(event.start.dateTime) : new Date(`${event.start.date}T09:00`)
+    const end = event.end.dateTime ? new Date(event.end.dateTime) : new Date(start.getTime() + 60 * 60 * 1000)
+    const durationMin = Math.max(30, Math.round((end.getTime() - start.getTime()) / 60_000))
+    const title = cleanEventSummary(event.summary).split(' — ')[0]?.trim() || serviceOptions[0]?.label || 'Rendez-vous'
+    const clientId = event.extendedProperties?.private?.clientId ?? 'agenda'
+    const selectedClient = clientList.find((client) => client.id === clientId)
+    return {
+      title,
+      start,
+      durationMin,
+      notes: event.description ?? '',
+      clientId,
+      clientName: selectedClient ? `${selectedClient.firstName} ${selectedClient.lastName}` : getEventClientName(event),
+      clientPhone: selectedClient?.phone,
+    }
+  }
+
+  async function handleDeleteEvent(event: CalendarEvent) {
+    try {
+      await deleteAppointment(event.id)
+      setSelected(null)
+      setEditingEvent(null)
+      await load()
+    } catch (e) {
+      console.error(e)
+      setError(e instanceof GoogleAuthError ? 'Session Google expirée : reconnecte-toi puis recommence.' : 'Le rendez-vous n’a pas pu être supprimé.')
+    }
+  }
+
+  async function handleUpdateEvent(input: AppointmentInput) {
+    if (!editingEvent) return
+    const selectedClient = clients?.find((client) => client.id === input.clientId)
+    if (!selectedClient) {
+      setError('Un rendez-vous doit être lié à une cliente existante.')
+      return
+    }
+    setSaving(true)
+    try {
+      await updateAppointment(editingEvent.id, {
+        clientId: selectedClient.id,
+        clientName: `${selectedClient.firstName} ${selectedClient.lastName}`,
+        clientPhone: selectedClient.phone,
+        title: input.title,
+        start: input.start,
+        durationMin: input.durationMin,
+        notes: input.notes,
+      })
+      setEditingEvent(null)
+      setSelected(null)
+      await load()
+    } catch (e) {
+      console.error(e)
+      setError(e instanceof GoogleAuthError ? 'Session Google expirée : reconnecte-toi puis recommence.' : 'Le rendez-vous n’a pas pu être modifié.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleCreateEvent(input: AppointmentInput) {
+    const selectedClient = clients?.find((client) => client.id === input.clientId)
+    if (!selectedClient) {
+      setError('Un rendez-vous doit être lié à une cliente existante.')
+      return
+    }
+    setSaving(true)
+    setError(null)
+    try {
+      await createAppointment({
+        ...input,
+        clientId: selectedClient.id,
+        clientName: `${selectedClient.firstName} ${selectedClient.lastName}`,
+        clientPhone: selectedClient.phone,
+      })
+      setCreating(false)
+      await load()
+    } catch (e) {
+      console.error(e)
+      setError(e instanceof GoogleAuthError ? 'Session Google expirée : reconnecte-toi puis recommence.' : 'Le rendez-vous n’a pas pu être créé.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleCreateClient(input: ClientInput) {
+    await addClient(input)
+    setClientFormOpen(false)
+  }
+
   if (!connected) {
     return (
-      <div className="bg-white rounded-xl border border-rose-100 p-4 space-y-3 text-center">
+      <div className="bg-white rounded-xl border border-[#ead8c7] p-4 space-y-3 text-center">
         <p className="text-sm text-neutral-600">Connecte ton agenda Google pour voir ta semaine.</p>
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && <p className="text-sm text-[#8f6a52]">{error}</p>}
         <button
           onClick={() => ensureToken().catch(() => setError('Connexion Google annulée.'))}
-          className="w-full rounded-lg bg-rose-600 py-2.5 text-sm font-medium text-white"
+          className="w-full rounded-lg bg-[#8a6448] py-2.5 text-sm font-medium text-white"
         >
           Connecter mon agenda Google
         </button>
@@ -196,10 +320,10 @@ export default function Agenda() {
   return (
     <div className="space-y-3">
       {/* Bascule Jour / Semaine */}
-      <div className="grid grid-cols-2 rounded-lg bg-rose-100 p-1 text-sm font-medium">
+      <div className="grid grid-cols-2 rounded-lg bg-[#f0e3d8] p-1 text-sm font-medium">
         {(['day', 'week'] as const).map((v) => (
           <button key={v} onClick={() => changeView(v)}
-            className={`rounded-md py-1.5 ${view === v ? 'bg-white text-rose-700 shadow-sm' : 'text-rose-500'}`}>
+            className={`rounded-md py-1.5 ${view === v ? 'bg-white text-[#704f3b] shadow-sm' : 'text-[#9a7355]'}`}>
             {v === 'day' ? 'Jour' : 'Semaine'}
           </button>
         ))}
@@ -212,13 +336,29 @@ export default function Agenda() {
           aria-label={view === 'day' ? 'Jour précédent' : 'Semaine précédente'}>‹</button>
         <div className="text-center">
           <div className="text-sm font-semibold text-neutral-800 first-letter:uppercase">{periodLabel}</div>
-          <button onClick={() => setAnchor(startOfDay(new Date()))} className="text-xs text-rose-600">
+          <button onClick={() => setAnchor(startOfDay(new Date()))} className="text-xs text-[#8a6448]">
             Aujourd'hui
           </button>
         </div>
         <button onClick={() => move(1)}
           className="w-9 h-9 rounded-full border border-neutral-300 bg-white"
           aria-label={view === 'day' ? 'Jour suivant' : 'Semaine suivante'}>›</button>
+      </div>
+
+      <div>
+        <button
+          type="button"
+          onClick={() => {
+            if (!connected) {
+              ensureToken().catch(() => setError('Connexion Google annulée.'))
+              return
+            }
+            setCreating(true)
+          }}
+          className="w-full rounded-lg bg-[#8a6448] px-4 py-2 text-sm font-medium text-white"
+        >
+          + Créer un RDV
+        </button>
       </div>
 
       {/* Mode jour : bandeau de la semaine pour sauter d'un jour à l'autre */}
@@ -229,15 +369,15 @@ export default function Agenda() {
             const count = timed.filter((t) => sameDay(t.start, d)).length
             return (
               <button key={d.toISOString()} onClick={() => setAnchor(d)}
-                className={`rounded-lg py-1.5 text-center ${active ? 'bg-rose-600 text-white' : 'bg-white text-neutral-700'}`}>
-                <div className={`text-[10px] uppercase ${active ? 'text-rose-100' : 'text-neutral-400'}`}>
+                className={`rounded-lg py-1.5 text-center ${active ? 'bg-[#8a6448] text-white' : 'bg-white text-neutral-700'}`}>
+                <div className={`text-[10px] uppercase ${active ? 'text-[#f7e8dc]' : 'text-neutral-400'}`}>
                   {DAY_LABELS[(d.getDay() + 6) % 7]}
                 </div>
-                <div className={`text-sm font-semibold ${sameDay(d, now) && !active ? 'text-rose-600' : ''}`}>
+                <div className={`text-sm font-semibold ${sameDay(d, now) && !active ? 'text-[#8a6448]' : ''}`}>
                   {d.getDate()}
                 </div>
                 <div className="h-1.5 flex justify-center">
-                  {count > 0 && <span className={`w-1.5 h-1.5 rounded-full ${active ? 'bg-white' : 'bg-rose-500'}`} />}
+                  {count > 0 && <span className={`w-1.5 h-1.5 rounded-full ${active ? 'bg-white' : 'bg-[#9a7355]'}`} />}
                 </div>
               </button>
             )
@@ -245,14 +385,14 @@ export default function Agenda() {
         </div>
       )}
 
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && <p className="text-sm text-[#8f6a52]">{error}</p>}
       {loading && <p className="text-xs text-neutral-400 text-center">Chargement…</p>}
 
       {/* Grille : défile horizontalement sur téléphone */}
-      <div className="bg-white rounded-xl border border-rose-100 overflow-x-auto">
+      <div className="bg-white rounded-xl border border-[#ead8c7] overflow-x-auto">
         <div className={view === 'week' ? 'min-w-[640px]' : ''}>
           {/* En-têtes des jours */}
-          <div style={gridCols} className="grid border-b border-rose-100 bg-white">
+          <div style={gridCols} className="grid border-b border-[#ead8c7] bg-white">
             <div />
             {days.map((d, i) => {
               const today = sameDay(d, now)
@@ -260,7 +400,7 @@ export default function Agenda() {
                 <div key={i} className="py-2 text-center">
                   <div className="text-[11px] uppercase text-neutral-400">{DAY_LABELS[(d.getDay() + 6) % 7]}</div>
                   <div className={`mx-auto mt-0.5 w-7 h-7 rounded-full flex items-center justify-center text-sm font-semibold ${
-                    today ? 'bg-rose-600 text-white' : 'text-neutral-700'}`}>
+                    today ? 'bg-[#8a6448] text-white' : 'text-neutral-700'}`}>
                     {d.getDate()}
                   </div>
                 </div>
@@ -270,7 +410,7 @@ export default function Agenda() {
 
           {/* RDV journée entière */}
           {allDay.length > 0 && (
-            <div style={gridCols} className="grid border-b border-rose-100 text-[11px]">
+            <div style={gridCols} className="grid border-b border-[#ead8c7] text-[11px]">
               <div className="p-1 text-neutral-400">jour</div>
               {days.map((d, i) => (
                 <div key={i} className="p-0.5 space-y-0.5">
@@ -280,12 +420,20 @@ export default function Agenda() {
                       const e = new Date(ev.end.date + 'T00:00') // date de fin exclusive
                       return d >= s && d < e
                     })
-                    .map((ev) => (
-                      <button key={ev.id} onClick={() => setSelected(ev)}
-                        className="block w-full truncate rounded bg-rose-100 px-1 text-left text-rose-800">
-                        {ev.summary ?? '(sans titre)'}
-                      </button>
-                    ))}
+                    .map((ev) => {
+                      const title = cleanEventSummary(ev.summary)
+                      const bg = getServiceColor(ev.summary)
+                      return (
+                        <button
+                          key={ev.id}
+                          onClick={() => setSelected(ev)}
+                          className="block w-full truncate rounded px-1 text-left"
+                          style={{ backgroundColor: `${bg}cc`, color: '#1f2937' }}
+                        >
+                          {title || '(sans titre)'}
+                        </button>
+                      )
+                    })}
                 </div>
               ))}
             </div>
@@ -310,13 +458,13 @@ export default function Agenda() {
               )
               const isToday = sameDay(day, now)
               return (
-                <div key={i} className={`relative border-l border-rose-50 ${isToday ? 'bg-rose-50/40' : ''}`}>
+                <div key={i} className={`relative border-l border-[#f3e7dd] ${isToday ? 'bg-[#f8f2ee]/40' : ''}`}>
                   {hours.map((h) => (
                     <div key={h} style={{ height: HOUR_HEIGHT }} className="border-t border-neutral-100" />
                   ))}
 
                   {isToday && hoursOf(now) >= startHour && hoursOf(now) <= endHour && (
-                    <div className="absolute inset-x-0 h-0.5 bg-red-500 z-[2]"
+                    <div className="absolute inset-x-0 h-0.5 bg-[#9b7558] z-[2]"
                       style={{ top: (hoursOf(now) - startHour) * HOUR_HEIGHT }} />
                   )}
 
@@ -324,18 +472,23 @@ export default function Agenda() {
                     const top = (hoursOf(start) - startHour) * HOUR_HEIGHT
                     const endH = sameDay(start, end) ? hoursOf(end) : 24
                     const height = Math.max((endH - hoursOf(start)) * HOUR_HEIGHT - 2, 18)
-                    const [service, client] = (event.summary ?? '(sans titre)').split(' — ')
+                    const parts = cleanEventSummary(event.summary).split(' — ').map((part) => part.trim()).filter(Boolean)
+                    const service = parts[0] ?? '(sans titre)'
+                    const client = parts[1]
+                    const bg = getServiceColor(event.summary)
                     return (
                       <button
                         key={event.id}
                         onClick={() => setSelected(event)}
-                        className={`absolute overflow-hidden rounded-md bg-rose-600/90 text-left leading-tight text-white shadow-sm ${
+                        className={`absolute overflow-hidden rounded-md text-left leading-tight shadow-sm ${
                           view === 'day' ? 'px-2 py-1 text-xs' : 'px-1 py-0.5 text-[11px]'}`}
                         style={{
                           top,
                           height,
                           left: `calc(${(lane / lanes) * 100}% + 1px)`,
                           width: `calc(${100 / lanes}% - 2px)`,
+                          backgroundColor: bg,
+                          color: '#1f2937',
                         }}
                       >
                         <div className="font-semibold truncate">{client ?? service}</div>
@@ -363,8 +516,63 @@ export default function Agenda() {
                 : 'Journée entière'}
             </p>
             {selected.location && <p>📍 {selected.location}</p>}
-            {selected.description && <p className="whitespace-pre-wrap text-neutral-600">{selected.description}</p>}
+            {selected.description && <p className="whitespace-pre-wrap text-neutral-600">{cleanEventSummary(selected.description)}</p>}
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setEditingEvent(selected)}
+                className="flex h-9 w-9 items-center justify-center rounded border border-neutral-300 text-neutral-600 transition hover:bg-neutral-50"
+                aria-label="Modifier le rendez-vous"
+              >
+                <FontAwesomeIcon icon={faPen} className="text-sm" />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDeleteEvent(selected)}
+                className="flex h-9 w-9 items-center justify-center rounded border border-[#d7bda3] text-[#8f6a52] transition hover:bg-[#f5eee7]"
+                aria-label="Supprimer le rendez-vous"
+              >
+                <FontAwesomeIcon icon={faTrash} className="text-sm" />
+              </button>
+            </div>
           </div>
+        </Modal>
+      )}
+
+      {creating && (
+        <Modal title="Nouveau rendez-vous" onClose={() => setCreating(false)}>
+          <AppointmentForm
+            saving={saving}
+            onSubmit={handleCreateEvent}
+            onCancel={() => setCreating(false)}
+            submitLabel="Créer le RDV"
+            clients={clients ?? []}
+            onCreateClient={() => setClientFormOpen(true)}
+          />
+        </Modal>
+      )}
+
+      {clientFormOpen && (
+        <Modal title="Nouvelle cliente" onClose={() => setClientFormOpen(false)}>
+          <ClientForm
+            onSubmit={handleCreateClient}
+            onCancel={() => setClientFormOpen(false)}
+          />
+        </Modal>
+      )}
+
+      {editingEvent && (
+        <Modal title={`Modifier le RDV`} onClose={() => setEditingEvent(null)}>
+          <AppointmentForm
+            saving={saving}
+            initial={getEventInitial(editingEvent, clients ?? [])}
+            onSubmit={handleUpdateEvent}
+            onCancel={() => setEditingEvent(null)}
+            submitLabel="Enregistrer"
+            clients={clients ?? []}
+            onCreateClient={() => setClientFormOpen(true)}
+          />
         </Modal>
       )}
     </div>

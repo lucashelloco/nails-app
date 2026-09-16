@@ -20,7 +20,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-dvh flex items-center justify-center bg-rose-50 text-sm text-neutral-500">
+      <div className="min-h-dvh flex items-center justify-center bg-[#f5eee7] text-sm text-neutral-500">
         Chargement…
       </div>
     )
