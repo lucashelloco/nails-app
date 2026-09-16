@@ -52,11 +52,11 @@ export default function Clients() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Rechercher une cliente…"
-          className="flex-1 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
+          className="flex-1 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#b48f74]"
         />
         <button
           onClick={() => setEditing('new')}
-          className="shrink-0 rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white"
+          className="shrink-0 rounded-lg bg-[#8a6448] px-4 py-2 text-sm font-medium text-white"
         >
           + Ajouter
         </button>
@@ -72,12 +72,12 @@ export default function Clients() {
         {filtered.map((client) => {
           const isOpen = openId === client.id
           return (
-            <li key={client.id} className="bg-white rounded-xl border border-rose-100 overflow-hidden">
+            <li key={client.id} className="bg-white rounded-xl border border-[#ead8c7] overflow-hidden">
               <button
                 onClick={() => setOpenId(isOpen ? null : client.id)}
                 className="w-full text-left p-3 flex items-center gap-3"
               >
-                <div className="w-9 h-9 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-sm font-semibold shrink-0">
+                <div className="w-9 h-9 rounded-full bg-[#f0e3d8] text-[#8a6448] flex items-center justify-center text-sm font-semibold shrink-0">
                   {client.firstName[0]}
                   {client.lastName[0]}
                 </div>
@@ -91,7 +91,7 @@ export default function Clients() {
               </button>
 
               {isOpen && (
-                <div className="px-3 pb-3 space-y-2 border-t border-rose-50 pt-2">
+                <div className="px-3 pb-3 space-y-2 border-t border-[#f3e7dd] pt-2">
                   {client.email && (
                     <div className="text-sm text-neutral-600">✉️ {client.email}</div>
                   )}
@@ -108,7 +108,7 @@ export default function Clients() {
                     </button>
                     <button
                       onClick={() => handleDelete(client.id)}
-                      className="flex-1 rounded-lg border border-red-200 py-2 text-sm font-medium text-red-500"
+                      className="flex-1 rounded-lg border border-[#d7bda3] py-2 text-sm font-medium text-[#8f6a52]"
                     >
                       Supprimer
                     </button>

@@ -16,6 +16,11 @@ export interface CalendarEvent {
   location?: string
   start: { dateTime?: string; date?: string }
   end: { dateTime?: string; date?: string }
+  extendedProperties?: {
+    private?: {
+      clientId?: string
+    }
+  }
 }
 
 export class GoogleAuthError extends Error {}
@@ -123,7 +128,15 @@ async function apiFetch(url: string, init: RequestInit = {}) {
     throw new GoogleAuthError('expired')
   }
   if (!res.ok) throw new Error(`Google Calendar : ${res.status}`)
-  return res.json()
+
+  const text = await res.text()
+  if (!text) return null
+
+  try {
+    return JSON.parse(text)
+  } catch {
+    return text
+  }
 }
 
 export async function getUpcomingEvents(
@@ -185,6 +198,27 @@ export async function createAppointment(a: NewAppointment) {
       extendedProperties: { private: { clientId: a.clientId } },
     }),
   })) as CalendarEvent
+}
+
+export async function updateAppointment(id: string, a: NewAppointment) {
+  const end = new Date(a.start.getTime() + a.durationMin * 60_000)
+  const description = [a.clientPhone && `Tél : ${a.clientPhone}`, a.notes]
+    .filter(Boolean)
+    .join('\n')
+  return (await apiFetch(`${API}/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      summary: `${a.title} — ${a.clientName}`,
+      description,
+      start: { dateTime: a.start.toISOString(), timeZone: 'Europe/Paris' },
+      end: { dateTime: end.toISOString(), timeZone: 'Europe/Paris' },
+      extendedProperties: { private: { clientId: a.clientId } },
+    }),
+  })) as CalendarEvent
+}
+
+export async function deleteAppointment(id: string) {
+  await apiFetch(`${API}/${id}`, { method: 'DELETE' })
 }
 
 export function formatEventStart(event: CalendarEvent) {

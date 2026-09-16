@@ -45,14 +45,14 @@ export default function UpcomingAppointments() {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-rose-100 p-4">
+    <div className="bg-white rounded-xl border border-[#ead8c7] p-4">
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-sm font-semibold text-neutral-700">
           Rendez-vous des {DAYS_AHEAD} prochains jours
         </h2>
         {connected && (
           <div className="flex gap-3">
-            <button onClick={load} className="text-xs font-medium text-rose-600">
+            <button onClick={load} className="text-xs font-medium text-[#8a6448]">
               Actualiser
             </button>
             <button onClick={disconnectGoogle} className="text-xs text-neutral-400">
@@ -62,12 +62,12 @@ export default function UpcomingAppointments() {
         )}
       </div>
 
-      {error && <p className="text-sm text-red-500 mb-2">{error}</p>}
+      {error && <p className="text-sm text-[#8f6a52] mb-2">{error}</p>}
 
       {!connected ? (
         <button
           onClick={handleConnect}
-          className="w-full rounded-lg bg-rose-600 py-2.5 text-sm font-medium text-white"
+          className="w-full rounded-lg bg-[#8a6448] py-2.5 text-sm font-medium text-white"
         >
           Connecter mon agenda Google
         </button>

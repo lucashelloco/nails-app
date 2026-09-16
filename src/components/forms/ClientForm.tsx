@@ -36,7 +36,7 @@ export default function ClientForm({ initial, onSubmit, onCancel }: ClientFormPr
             required
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-400"
+            className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b48f74]"
           />
         </div>
         <div>
@@ -45,7 +45,7 @@ export default function ClientForm({ initial, onSubmit, onCancel }: ClientFormPr
             required
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
-            className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-400"
+            className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b48f74]"
           />
         </div>
       </div>
@@ -57,7 +57,7 @@ export default function ClientForm({ initial, onSubmit, onCancel }: ClientFormPr
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           placeholder="06 12 34 56 78"
-          className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-400"
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b48f74]"
         />
       </div>
 
@@ -67,7 +67,7 @@ export default function ClientForm({ initial, onSubmit, onCancel }: ClientFormPr
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-400"
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b48f74]"
         />
       </div>
 
@@ -79,7 +79,7 @@ export default function ClientForm({ initial, onSubmit, onCancel }: ClientFormPr
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={3}
-          className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-400"
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b48f74]"
         />
       </div>
 
@@ -93,7 +93,7 @@ export default function ClientForm({ initial, onSubmit, onCancel }: ClientFormPr
         </button>
         <button
           type="submit"
-          className="flex-1 rounded-lg bg-rose-600 py-2.5 font-medium text-white"
+          className="flex-1 rounded-lg bg-[#8a6448] py-2.5 font-medium text-white"
         >
           Enregistrer
         </button>

@@ -13,8 +13,8 @@ export default function Layout() {
   const online = useOnline()
 
   return (
-    <div className="min-h-dvh flex flex-col bg-rose-50 text-neutral-800" style={{backgroundColor:'#CDE0CD'}}>
-      <header className="sticky top-0 z-10 bg-rose-600 text-white shadow-sm" style={{backgroundColor:'#3B6B54'}}>
+    <div className="min-h-dvh flex flex-col bg-[#f5eee7] text-neutral-800" style={{backgroundColor:'#CDE0CD'}}>
+      <header className="sticky top-0 z-10 bg-[#8a6448] text-white shadow-sm" style={{backgroundColor:'#3B6B54'}}>
         <div className="mx-auto max-w-2xl px-4 py-3 flex items-center gap-3">
           <h1 className="text-lg font-semibold flex-1">💅 Mon Institut</h1>
           {!online && (
@@ -26,7 +26,7 @@ export default function Layout() {
             onClick={() => {
               if (confirm('Se déconnecter de cet appareil ?')) signOut()
             }}
-            className="text-xs text-rose-100 hover:text-white"
+            className="text-xs text-[#f7e8dc] hover:text-white"
           >
             Déconnexion
           </button>
@@ -37,7 +37,7 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      <nav className="fixed bottom-0 inset-x-0 border-t border-rose-200 bg-white">
+      <nav className="fixed bottom-0 inset-x-0 border-t border-[#d7bda3] bg-white">
         <div className="mx-auto max-w-2xl grid grid-cols-4">
           {tabs.map((tab) => (
             <NavLink
@@ -46,7 +46,7 @@ export default function Layout() {
               end={tab.end}
               className={({ isActive }) =>
                 `flex flex-col items-center gap-0.5 py-2.5 text-xs font-medium transition-colors ${
-                  isActive ? 'text-rose-600' : 'text-neutral-400'
+                  isActive ? 'text-[#8a6448]' : 'text-neutral-400'
                 }`
               }
             >
