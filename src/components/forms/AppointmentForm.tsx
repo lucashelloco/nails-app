@@ -78,7 +78,7 @@ export default function AppointmentForm({ saving, onSubmit, onCancel }: Appointm
       <div>
         <label className="block text-sm font-medium text-neutral-600 mb-1">Durée</label>
         <select value={durationMin} onChange={(e) => setDurationMin(Number(e.target.value))} className={inputClass}>
-          {[45, 75, 90, 105, 120, 135, 150, 165].map((m) => (
+          {[30, 45, 75, 90, 105, 120, 135, 150, 165].map((m) => (
             <option key={m} value={m}>
               {m >= 60 ? `${Math.floor(m / 60)} h ${m % 60 ? String(m % 60).padStart(2, '0') : ''}` : `${m} min`}
             </option>
