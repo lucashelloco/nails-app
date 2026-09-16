@@ -108,7 +108,7 @@ export default function Settings() {
                   <span className="font-medium text-neutral-800">{service.name}</span>
                 </div>
                 <div className="mt-1 text-xs text-neutral-500">
-                  {service.duration} min · {service.price} €
+                  {service.duration} min · {service.price != null ? `${service.price} €` : 'Prix non défini'}
                 </div>
                 {service.notes && (
                   <p className="mt-1 text-xs text-neutral-500">{service.notes}</p>
@@ -164,17 +164,19 @@ interface ServiceFormProps {
 function ServiceForm({ initial, onSubmit, onCancel }: ServiceFormProps) {
   const [name, setName] = useState(initial?.name ?? '')
   const [duration, setDuration] = useState(initial?.duration ?? 60)
-  const [price, setPrice] = useState(initial?.price ?? 60)
+  const [price, setPrice] = useState(initial?.price == null ? '' : String(initial.price))
   const [color, setColor] = useState(initial?.color ?? '#CFE8FF')
   const [notes, setNotes] = useState(initial?.notes ?? '')
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!name.trim()) return
+    const parsedPrice = price.trim() === '' ? undefined : Number(price)
+    if (parsedPrice !== undefined && (!Number.isFinite(parsedPrice) || parsedPrice < 0)) return
     onSubmit({
       name: name.trim(),
       duration,
-      price,
+      price: parsedPrice,
       color,
       notes: notes.trim() || undefined,
     })
@@ -210,9 +212,9 @@ function ServiceForm({ initial, onSubmit, onCancel }: ServiceFormProps) {
           <input
             type="number"
             min={0}
-            step={5}
+            step="any"
             value={price}
-            onChange={(e) => setPrice(Number(e.target.value))}
+            onChange={(e) => setPrice(e.target.value)}
             className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b48f74]"
           />
         </div>

@@ -80,11 +80,13 @@ function cleanEventSummary(summary?: string) {
     .trim()
 }
 
-function getServiceColor(summary?: string) {
+function getServiceColor(summary?: string, serviceCatalog: { name: string; color: string }[] = []) {
   const raw = cleanEventSummary(summary)
   const serviceName = raw.split(' — ')[0]?.trim().toLowerCase()
-  const matched = serviceOptions.find((service) => service.label.toLowerCase() === serviceName)
-  return matched?.color ?? '#F9DCE8'
+  const matched = serviceCatalog.find((service) => service.name.toLowerCase() === serviceName)
+  if (matched) return matched.color
+  const fallback = serviceOptions.find((service) => service.label.toLowerCase() === serviceName)
+  return fallback?.color ?? '#F9DCE8'
 }
 
 // --- Placement des RDV -------------------------------------------------------
@@ -143,6 +145,7 @@ export default function Agenda() {
   const [now, setNow] = useState(() => new Date())
   const [clientFormOpen, setClientFormOpen] = useState(false)
   const clients = useLiveQuery(() => db.clients.orderBy('lastName').toArray(), [])
+  const serviceCatalog = useLiveQuery(() => db.services.toArray(), []) ?? []
 
   const weekDays = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart])
   const days = view === 'week'
@@ -436,7 +439,7 @@ export default function Agenda() {
                     })
                     .map((ev) => {
                       const title = cleanEventSummary(ev.summary)
-                      const bg = getServiceColor(ev.summary)
+                      const bg = getServiceColor(ev.summary, serviceCatalog)
                       return (
                         <button
                           key={ev.id}
@@ -489,7 +492,7 @@ export default function Agenda() {
                     const parts = cleanEventSummary(event.summary).split(' — ').map((part) => part.trim()).filter(Boolean)
                     const service = parts[0] ?? '(sans titre)'
                     const client = parts[1]
-                    const bg = getServiceColor(event.summary)
+                    const bg = getServiceColor(event.summary, serviceCatalog)
                     return (
                       <button
                         key={event.id}
