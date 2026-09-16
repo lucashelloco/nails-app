@@ -51,7 +51,6 @@ export default function ClientAppointments({ client }: { client: Client }) {
         ...input,
         clientId: client.id,
         clientName: `${client.firstName} ${client.lastName}`,
-        clientPhone: client.phone,
       })
       setFormOpen(false)
       await load()
