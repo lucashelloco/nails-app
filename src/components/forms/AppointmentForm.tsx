@@ -64,7 +64,7 @@ export default function AppointmentForm({ saving, onSubmit, onCancel }: Appointm
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-neutral-600 mb-1">Date je suis un test</label>
+          <label className="block text-sm font-medium text-neutral-600 mb-1">Date</label>
           <input type="date" required min={todayISO()} value={date}
             onChange={(e) => setDate(e.target.value)} className={inputClass} />
         </div>
