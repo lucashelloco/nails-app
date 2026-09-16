@@ -31,5 +31,17 @@ export interface Client {
   updatedAt: string
 }
 
+export interface Service {
+  id: string
+  name: string
+  duration: number
+  price: number
+  color: string
+  notes?: string
+  createdAt: string
+  updatedAt: string
+}
+
 export type ProductInput = Omit<Product, 'id' | 'createdAt' | 'updatedAt'>
 export type ClientInput = Omit<Client, 'id' | 'createdAt' | 'updatedAt'>
+export type ServiceInput = Omit<Service, 'id' | 'createdAt' | 'updatedAt'>

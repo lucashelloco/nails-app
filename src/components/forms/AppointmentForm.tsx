@@ -1,25 +1,22 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import { defaultServices } from '../../db/db'
 import type { Client } from '../../types'
 
 export type ServiceOption = {
   label: string
   duration: number
   color: string
+  price?: number
 }
 
-export const services: ServiceOption[] = [
-  { label: 'Manucure russe', duration: 30, color: '#CFE8FF' },
-  { label: 'Renfort', duration: 90, color: '#F9DCE8' },
-  { label: 'Gainage', duration: 105, color: '#D9F0D3' },
-  { label: 'Semi pieds', duration: 45, color: '#F9C98D' },
-  { label: 'Rallongement', duration: 120, color: '#E5D5FF' },
-  { label: 'Semi mains + pieds', duration: 135, color: '#E9A8C8' },
-  { label: 'Gainage mains + pieds', duration: 150, color: '#8CCF8F' },
-  { label: 'Rallongement mains + pieds', duration: 165, color: '#B69AEF' },
-  { label: 'Dépose', duration: 45, color: '#CFE8FF' },
-]
+export const services: ServiceOption[] = defaultServices.map((service) => ({
+  label: service.name,
+  duration: service.duration,
+  color: service.color,
+  price: service.price,
+}))
 
 export interface AppointmentInput {
   title: string

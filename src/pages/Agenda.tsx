@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPen, faTrash } from '@fortawesome/free-solid-svg-icons'
 import {
   createAppointment,
+  cleanAppointmentNotes,
   deleteAppointment,
   ensureToken,
   getEventsBetween,
@@ -127,6 +128,7 @@ function layoutDay(events: { event: CalendarEvent; start: Date; end: Date }[]): 
 export default function Agenda() {
   const connected = useGoogleConnection()
   const [view, setView] = useState<ViewMode>(initialView)
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 640px)').matches)
   const [anchor, setAnchor] = useState(() => startOfDay(new Date())) // jour sélectionné
   // Ne recharge l'agenda que si on change de semaine (pas à chaque changement de jour)
   const weekKey = startOfWeek(anchor).getTime()
@@ -143,8 +145,19 @@ export default function Agenda() {
   const clients = useLiveQuery(() => db.clients.orderBy('lastName').toArray(), [])
 
   const weekDays = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart])
-  const days = view === 'week' ? weekDays : [anchor]
+  const days = view === 'week'
+    ? isMobile
+      ? [anchor, addDays(anchor, 1), addDays(anchor, 2)]
+      : weekDays
+    : [anchor]
   const gridCols = { gridTemplateColumns: `3rem repeat(${days.length}, minmax(0, 1fr))` }
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 640px)')
+    const handleChange = () => setIsMobile(mediaQuery.matches)
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
 
   function changeView(v: ViewMode) {
     setView(v)
@@ -156,7 +169,8 @@ export default function Agenda() {
   }
 
   function move(direction: 1 | -1) {
-    setAnchor(addDays(anchor, direction * (view === 'week' ? 7 : 1)))
+    const step = view === 'day' ? 1 : isMobile ? 3 : 7
+    setAnchor(addDays(anchor, direction * step))
   }
 
   const load = useCallback(async () => {
@@ -206,7 +220,7 @@ export default function Agenda() {
 
   const periodLabel = view === 'day'
     ? anchor.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
-    : `${days[0].toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} – ${days[6].toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}`
+    : `${days[0].toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} – ${days[days.length - 1].toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}`
 
   function getEventClientName(event: CalendarEvent) {
     const summary = cleanEventSummary(event.summary)
@@ -224,7 +238,7 @@ export default function Agenda() {
       title,
       start,
       durationMin,
-      notes: event.description ?? '',
+      notes: cleanAppointmentNotes(event.description),
       clientId,
       clientName: selectedClient ? `${selectedClient.firstName} ${selectedClient.lastName}` : getEventClientName(event),
       clientPhone: selectedClient?.phone,
@@ -305,7 +319,7 @@ export default function Agenda() {
   if (!connected) {
     return (
       <div className="bg-white rounded-xl border border-[#ead8c7] p-4 space-y-3 text-center">
-        <p className="text-sm text-neutral-600">Connecte ton agenda Google pour voir ta semaine.</p>
+        <p className="text-sm text-neutral-600">Connecte ton agenda Google pour voir ton agenda.</p>
         {error && <p className="text-sm text-[#8f6a52]">{error}</p>}
         <button
           onClick={() => ensureToken().catch(() => setError('Connexion Google annulée.'))}
@@ -324,7 +338,7 @@ export default function Agenda() {
         {(['day', 'week'] as const).map((v) => (
           <button key={v} onClick={() => changeView(v)}
             className={`rounded-md py-1.5 ${view === v ? 'bg-white text-[#704f3b] shadow-sm' : 'text-[#9a7355]'}`}>
-            {v === 'day' ? 'Jour' : 'Semaine'}
+            {v === 'day' ? 'Jour' : isMobile ? '3 jours' : 'Semaine'}
           </button>
         ))}
       </div>
@@ -390,7 +404,7 @@ export default function Agenda() {
 
       {/* Grille : défile horizontalement sur téléphone */}
       <div className="bg-white rounded-xl border border-[#ead8c7] overflow-x-auto">
-        <div className={view === 'week' ? 'min-w-[640px]' : ''}>
+        <div className={view === 'week' && !isMobile ? 'min-w-[640px]' : ''}>
           {/* En-têtes des jours */}
           <div style={gridCols} className="grid border-b border-[#ead8c7] bg-white">
             <div />

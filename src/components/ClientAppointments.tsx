@@ -4,6 +4,7 @@ import { faPen, faTrash } from '@fortawesome/free-solid-svg-icons'
 import type { Client } from '../types'
 import {
   createAppointment,
+  cleanAppointmentNotes,
   deleteAppointment,
   ensureToken,
   formatEventStart,
@@ -73,7 +74,7 @@ export default function ClientAppointments({ client }: { client: Client }) {
     const end = ev.end.dateTime ? new Date(ev.end.dateTime) : new Date(start.getTime() + 60 * 60 * 1000)
     const durationMin = Math.max(30, Math.round((end.getTime() - start.getTime()) / 60_000))
     const title = trimEventSummary(ev.summary) || services[0].label
-    const notes = ev.description ?? ''
+    const notes = cleanAppointmentNotes(ev.description)
     setEditingEvent(ev)
     setFormOpen(true)
     setError(null)
@@ -138,7 +139,7 @@ export default function ClientAppointments({ client }: { client: Client }) {
       title: trimEventSummary(editingEvent.summary) || services[0].label,
       start,
       durationMin: Math.max(30, Math.round((end.getTime() - start.getTime()) / 60_000)),
-      notes: editingEvent.description ?? '',
+      notes: cleanAppointmentNotes(editingEvent.description),
     }
   }
 

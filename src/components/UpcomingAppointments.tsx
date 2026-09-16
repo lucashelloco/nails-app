@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faRotate } from '@fortawesome/free-solid-svg-icons'
 import {
   disconnectGoogle,
   ensureToken,
@@ -53,7 +55,8 @@ export default function UpcomingAppointments() {
         {connected && (
           <div className="flex gap-3">
             <button onClick={load} className="text-xs font-medium text-[#8a6448]">
-              Actualiser
+              <FontAwesomeIcon icon={faRotate} aria-hidden="true" />
+              <span className="sr-only">Actualiser</span>
             </button>
             <button onClick={disconnectGoogle} className="text-xs text-neutral-400">
               Déconnecter
