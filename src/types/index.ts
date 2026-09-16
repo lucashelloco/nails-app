@@ -35,7 +35,7 @@ export interface Service {
   id: string
   name: string
   duration: number
-  price: number
+  price?: number
   color: string
   notes?: string
   createdAt: string
