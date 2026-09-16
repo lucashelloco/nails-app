@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: system-ui, "Segoe UI", Roboto, sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Comfortable tap targets on mobile, since this is used on a phone/tablet
+   at the nail desk between clients. */
+button,
+[role="button"],
+input,
+select,
+textarea {
+  font: inherit;
+}
