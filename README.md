@@ -89,22 +89,3 @@ Mise en place (une seule fois) :
 
 Au premier login sur un appareil, les données déjà saisies localement
 sont envoyées automatiquement vers Supabase.
-
-## Pistes pour la suite
-
-- **Lien agenda** : ta cliente utilise l'app *Calendars* sur iPhone.
-  Deux pistes possibles plus tard :
-  1. **Export/partage .ics** : la plupart des apps calendrier (dont
-     Calendars) savent importer un fichier `.ics` ou s'abonner à un
-     flux `webcal://`. On pourrait générer un flux en lecture seule
-     depuis les rendez-vous programmés dans l'app.
-  2. **Sync bidirectionnelle** via un compte iCloud/Google Calendar
-     connecté (plus complexe, nécessite un petit serveur).
-  On regardera ça une fois que la partie stock/clientes est validée par
-  la cliente.
-- **Icônes PWA** : celles fournies (`public/icons/`) sont des
-  placeholders générés automatiquement — à remplacer par un vrai logo
-  avant la mise en production.
-- **Historique de consommation produit** : si utile, on peut ajouter un
-  journal des mouvements de stock (quel produit, quelle quantité,
-  quand) plutôt qu'un simple compteur.
